@@ -1,59 +1,59 @@
 class KVue {
-  constructor (options) {
-    this.$options = options
-    this.$data = options.data
-    this.observe(this.$data)
+  constructor(options) {
+    this.$options = options;
+    this.$data = options.data;
+    this.observe(this.$data);
 
-    new Watcher()
-    this.$data.test
-    new Watcher()
-    this.$data.foo.bar
+    new Compile(options.el, this);
+
+    if (options.created) {
+      options.created.call(this);
+    }
   }
-  observe (value) {
-    if (!value || typeof value !== 'object') {
-      return
+  observe(value) {
+    if (!value || typeof value !== "object") {
+      return;
     }
     // 遍历
     Object.keys(value).forEach(key => {
       // 执行响应式
-      this.defineReactive(value, key, value[key])
+      this.defineReactive(value, key, value[key]);
       // 代理到vm上
-      this.proxyData(key)
-    })
+      this.proxyData(key);
+    });
   }
 
-  proxyData (key) {
+  proxyData(key) {
     Object.defineProperty(this, key, {
-      get () {
-        return this[key]
+      get() {
+        return this.$data[key];
       },
-      set (newVal) {
-        this.$data[key] = newVal
+      set(newVal) {
+        this.$data[key] = newVal;
       }
-    })
+    });
   }
 
   defineReactive(obj, key, val) {
-    const dep = new Dep()
+    const dep = new Dep();
     Object.defineProperty(obj, key, {
-      get () {
-        // 
-        Dep.target && dep.addDep(Dep.target)
-        return val
+      get() {
+        //
+        Dep.target && dep.addDep(Dep.target);
+        return val;
       },
-      set (newVal) {
+      set(newVal) {
         if (newVal !== val) {
-          val = newVal
+          val = newVal;
           // console.log(`${key}更新了：${newVal}`)
           // 通知依赖
-          dep.notify()
+          dep.notify();
         }
       }
-    })
+    });
     // 递归:解决嵌套对象
-    this.observe(val)
+    this.observe(val);
   }
-
 }
 
 class Dep {
